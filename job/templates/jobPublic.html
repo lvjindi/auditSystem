@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>招聘发布</title>
+    <link rel="stylesheet" href="../../static/css/style.css"/>
+    <script type="text/javascript" charset="UTF-8" src="../../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../../static/js/auditSys/table.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../../static/js/auditSys/jquery-1.11.0.min.js"></script>
+</head>
+<body >
+<div id="pageTitle">招聘发布</div>
+<br><br>
+<div id="centerContainer">
+    <label>招聘单位:</label>
+    <select name="department">
+        <option value="#">选择部门</option>
+        <option value="0">计算机与信息科学学院</option>
+    </select><br><br>
+    <label>招聘职位:</label>
+    <input type="text" name="position"><br><br>
+    <label>截至日期:</label>
+    <input type="datetime-local" name="deadline"><br><br>
+    <label style="margin-left: 6%">薪资:</label>
+    <input type="text" name="salary"><br><br>
+    <label>职位描述:</label>
+    <textarea name="describe"></textarea><br><br>
+    <label>职位要求:</label>
+    <textarea name="requirement"></textarea><br><br>
+    <label>创建申请表:</label>
+    <button class="tabelBtm" id="createTable" onclick="nextStep()">生成表格</button>
+    <br><br>
+    <button class="submitBtm" id="createTable">发布</button>
+    <br><br>
+</div>
+</body>
+</html>
