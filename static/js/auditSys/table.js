@@ -1,27 +1,42 @@
 function nextStep() {
-    setCookie('department', document.getElementsByName('department').value);
-    setCookie('position', document.getElementsByName('position').value);
-    setCookie('deadline', document.getElementsByName('deadline').value);
-    setCookie('salary', document.getElementsByName('salary').value);
-    setCookie('describe', document.getElementsByName('describe').value);
-    setCookie('requirement', document.getElementsByName('requirement').value);
+    storeCookie();
     window.location.href = 'tableName';
 }
 
+function storeCookie() {
+    setCookie('department', document.getElementsByName('department')[0].value);
+    setCookie('position', document.getElementsByName('position')[0].value);
+    setCookie('deadline', document.getElementsByName('deadline')[0].value);
+    setCookie('salary', document.getElementsByName('salary')[0].value);
+    setCookie('describe', document.getElementsByName('describe')[0].value);
+    setCookie('requirement', document.getElementsByName('requirement')[0].value);
+}
+
 function setCookie(name, value) {
-    var exp = new Date();
-    exp.setTime(exp.getTime() + 60 * 60 * 1000);//一个小时后过期
-    document.cookie = name + "=" + escape(value) + ";expires=" + exp.toGMTString() + ";path=/";
+    var argv = setCookie.arguments;
+    var argc = setCookie.arguments.length;
+    //如果有三个参数，最后一个参数是有效时间
+    var expires = (argc > 2) ? argv[2] : null;
+    if (expires != null) {
+        var LargeExpDate = new Date();
+        LargeExpDate.setTime(LargeExpDate.getTime() + (expires * 1000 * 3600 * 24));
+    }
+    document.cookie = name + "=" + escape(value) + ((expires == null) ? "" : ("; expires=" + LargeExpDate.toGMTString()));
 }
 
 function getCookie(name) {
     var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
-
     if (arr = document.cookie.match(reg))
-
         return unescape(arr[2]);
     else
         return null;
+}
+
+
+function delCookie(name) {
+    var expdate = new Date();
+    expdate.setTime(expdate.getTime() - (86400 * 1000 * 1));
+    setCookie(name, "", expdate);
 }
 
 function tableName() {
@@ -33,6 +48,8 @@ function tableName() {
         dataType: 'json',
         data: data,
         success: function (data) {
+            setCookie('tableName', title);
+            setCookie('tableId', data);
             window.location.href = 'createTable?table_id=' + data;
         },
         error: function (data) {
@@ -86,11 +103,45 @@ function updateQuestion(id, type, title) {
     })
 }
 
+function initTest() {
+    var url = window.location.href.split('?');
+    var id;
+    if (url.length > 1) {
+        id = url[1].substr(url[1].indexOf('=') + 1, url[1].length - 1);
+        var table_btn = document.getElementsByClassName('tabelBtm')[0];
+        var next_ele = table_btn.nextElementSibling;
+        var parent = table_btn.parentNode;
+        parent.removeChild(table_btn);
+        var a = document.createElement('a');
+        a.href = 'createTable?id=' + id;
+        a.innerText = getCookie('tableName');
+        a.onclick = function () {
+            storeCookie();
+        }
+        next_ele.before(a);
+
+    }
+    getCookie('department') == null ?
+        document.getElementsByName('department')[0].value = '' : document.getElementsByName('department')[0].value = getCookie('department');
+    getCookie('position') == null ?
+        document.getElementsByName('position')[0].value = '' : document.getElementsByName('position')[0].value = getCookie('position');
+    getCookie('deadline') == null ?
+        document.getElementsByName('deadline')[0].value = '' : document.getElementsByName('deadline')[0].value = getCookie('deadline');
+    getCookie('salary') == null ?
+        document.getElementsByName('salary')[0].value = '' : document.getElementsByName('salary')[0].value = getCookie('salary');
+    getCookie('describe') == null ?
+        document.getElementsByName('describe')[0].value = '' : document.getElementsByName('describe')[0].value = getCookie('describe');
+    getCookie('requirement') == null ?
+        document.getElementsByName('requirement')[0].value = '' : document.getElementsByName('requirement')[0].value = getCookie('requirement');
+
+
+}
+
 
 function tableInit() {
     var url = window.location.href.split('?');
     var id = url[1].substr(url[1].indexOf('=') + 1, url[1].length - 1);
-    var title = getTableName(id)
+    var title = getCookie('tableName');
 
     var data = getQuestion(id);
 
@@ -172,7 +223,7 @@ function tableInit() {
     var addQuesBtn = updateBtn.cloneNode(true);
     addQuesBtn.innerText = '添加';
 
-    //如果已经有改表格创建的问题，就创建当前已有的问题
+    //如果已经有改表格创建的问题，就展示当前已有的问题
     if (data != null) {
         for (var i = 0; i < data.length; i++) {
             var type = data[i]['answer_type'];
@@ -307,7 +358,7 @@ function tableInit() {
         }
 
         okBtn.onclick = function () {
-            window.location.href = 'jobPublic'
+            window.location.href = 'jobPublic?id=' + id;
         }
 
     }
@@ -377,24 +428,42 @@ function tableTemplateInit() {
 
 }
 
+function publicJob() {
+    var data = {
+        'department': document.getElementsByName('department')[0].value,
+        'position': document.getElementsByName('position')[0].value,
+        'deadline': document.getElementsByName('deadline')[0].value,
+        'salary': document.getElementsByName('salary')[0].value,
+        'describe': document.getElementsByName('describe')[0].value,
+        'requirement': document.getElementsByName('requirement')[0].value,
+        'table_id': getCookie('tableId') == null ? '0' : getCookie('tableId'),
 
-function getTableName(id) {
-    var name;
+    }
+
     $.ajax({
-        type: 'GET',
-        url: 'table?id=' + id,
+        type: 'POST',
+        url: 'jobPublic',
+        data: data,
         dataType: 'json',
-        async: false,
         success: function (data) {
-            name = data['title'];
-        },
-        error: function () {
-            alert('ERROR');
-            console.log();
+            delCookie('department');
+            delCookie('position');
+            delCookie('deadline');
+            delCookie('salary');
+            delCookie('describe');
+            delCookie('requirement');
+            delCookie('tableName');
+            delCookie('tableId');
+            if (data.error) {
+                alert(data.data)
+            } else {
+                alert("发布成功");
+                window.location.href = 'jobPublic'
+            }
         }
     })
-    return name;
 }
+
 
 function getQuestion(id) {
     var tmp;

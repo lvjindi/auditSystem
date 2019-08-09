@@ -32,7 +32,7 @@ class Job(models.Model):
     salary = models.TextField(null=True)
     describe = models.TextField(null=True)
     requirement = models.TextField(null=True)
-    table = models.OneToOneField(Table, on_delete=models.CASCADE)
+    table = models.OneToOneField(Table, on_delete=models.CASCADE, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
 

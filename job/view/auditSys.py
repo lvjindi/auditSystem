@@ -1,8 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 
 from account.decorators import office_head_required
 from job.models import Job, Table, Question
-from job.serializers import TableSerializer, QuestionSerializer
+from job.serializers import TableSerializer, QuestionSerializer, JobSerializer
 from utils.api.api import APIView, validate_serializer
 
 
@@ -15,11 +16,14 @@ class JobPublicAPI(APIView):
     def post(self, request):
         try:
             data = request.data
-            job = Job.objects.create(**data)
-            job.created_by = request.user
-            job.save()
-        except Exception:
-            return self.error('ERROR')
+            job = Job.objects.create(department=data['department'], position=data['position'],
+                                     deadline=data['deadline'], salary=data['salary'],
+                                     describe=data['describe'], requirement=data['requirement'],
+                                     table_id=data['table_id'], created_by=request.user)
+            return self.success(JobSerializer(job).data)
+        except ValidationError as e:
+            print(e)
+            return self.error(msg=str(e))
 
 
 class TableNameAPI(APIView):
