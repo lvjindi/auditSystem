@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../../static/js/auditSys/index.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px">
+<div id="tb" style="padding:5px;height:auto">
+    <div style="margin-bottom:5px">
+        <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>
+        Language:
+        <input class="easyui-combobox" style="width:100px"
+               url="data/combobox_data.json"
+               valueField="id" textField="text">
+        <a href="#" class="easyui-linkbutton" iconCls="icon-search">Search</a>
+    </div>
+
+</div>
+<table class="easyui-datagrid" style="width:95%;height:auto;"
+       url="job"
+       title="DataGrid - Complex Toolbar" toolbar="#tb"
+       singleSelect="true" fitColumns="true" rownumbers="true" pagination="true" method="get">
+    <thead>
+    <tr>
+        {#        <th field="id" width="30">序号</th>#}
+        <th field="position" width="120">职位</th>
+        <th field="department" width="100">部门</th>
+        <th field="salary" width="70">薪资</th>
+        <th field="table" width="120">申请表</th>
+        <th field="created_by" width="50">创建人</th>
+        <th field="create_time" width="80">创建时间</th>
+        <th field="last_update_time" width="80">更新时间</th>
+    </tr>
+    </thead>
+</table>
+<script type="text/javascript">
+    $(function () {
+        var pager = $('#dg').datagrid().datagrid('getPager');	// get the pager of datagrid
+        pager.pagination({
+            buttons: [{
+                iconCls: 'icon-search',
+                handler: function () {
+                    alert('search');
+                }
+            }, {
+                iconCls: 'icon-add',
+                handler: function () {
+                    alert('add');
+                }
+            }, {
+                iconCls: 'icon-edit',
+                handler: function () {
+                    alert('edit');
+                }
+            }]
+        });
+    })
+</script>
+<script type="application/javascript">
+    var datagrid = document.getElementsByClassName('easyui-datagrid')[0];
+    var value = permissionRole();
+    var role = value[0];
+    if (role == 'Office Head') {
+        datagrid.title = '我的发布';
+    } else {
+        datagrid.title = '职位浏览';
+    }
+
+
+</script>
+</body>
+</html>

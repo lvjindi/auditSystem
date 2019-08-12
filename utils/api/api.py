@@ -131,19 +131,20 @@ class APIView(View):
 
     def paginate_data(self, request, query_set, object_serializer=None):
         """
-        :param request: django的request
-        :param query_set: django model的query set或者其他list like objects
-        :param object_serializer: 用来序列化query set, 如果为None, 则直接对query set切片
-        :return:
-        """
+            :param request: django的request
+            :param query_set: django model的query set或者其他list like objects
+            :param object_serializer: 用来序列化query set, 如果为None, 则直接对query set切片
+            :return:
+            """
+        # limit:page_size     offset:page
         try:
-            limit = int(request.GET.get("limit", "70"))
+            limit = int(request.GET.get("rows", "10"))
         except ValueError:
-            limit = 70
+            limit = 10
         if limit < 0 or limit > 250:
-            limit = 70
+            limit = 10
         try:
-            offset = int(request.GET.get("offset", "0"))
+            offset = int(request.GET.get("page", "0"))
         except ValueError:
             offset = 0
         if offset < 0:
@@ -154,7 +155,10 @@ class APIView(View):
             results = object_serializer(results, many=True).data
         else:
             count = query_set.count()
-        data = results
+        data = {
+            "total": count,
+            "rows": results
+        }
         return data
 
     @csrf_exempt

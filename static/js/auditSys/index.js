@@ -21,6 +21,11 @@ function menu() {
     //其他
     var menuOther = ['待处理任务', '历史记录'];
 
+    var urlRU = ['jobManagement'];
+    var urlAP = ['jobManagement', '#'];
+    var urlOH = ['jobManagement', '#', '#'];
+    var urlOther = ['#', '#'];
+
     var value = permissionRole();
     var role = value[0];
     var topContainer = document.getElementById('container-top');
@@ -73,10 +78,13 @@ function menu() {
     }
 
     var menu = []
+    var url = []
     if (role == roleType.REGULAR_USER || role == null) {
         menu = menuRU;
+        url = urlRU;
     } else if (role == roleType.APPLICANT) {
         menu = menuAP;
+        url = urlAP;
     } else if (role == roleType.OFFICE_HEAD) {
         var publicButton = document.createElement('button');
         publicButton.id = 'loginBtm';
@@ -85,16 +93,19 @@ function menu() {
         publicButton.style.marginLeft = '10%';
         publicButton.style.marginTop = '10px';
         publicButton.style.marginBottom = '15px';
+
         leftPanel.append(publicButton);
 
         publicButton.onclick = function () {
             rightPanel.src = 'jobPublic'
         }
         menu = menuOH;
+        url = urlOH;
     } else {
         menu = menuOther;
+        url = urlOther;
     }
-    createMenu(menu, leftPanel)
+    createMenu(menu, url, leftPanel)
 
 
 }
@@ -116,7 +127,8 @@ function permissionRole() {
     return temp;
 }
 
-function createMenu(menu, leftPanel) {
+function createMenu(menu, url, leftPanel) {
+    var container_right = document.getElementById('container-right');
     for (var i = 0; i < menu.length; i++) {
         var panel = document.createElement('div');
         panel.style.width = '99.5%';
@@ -126,6 +138,14 @@ function createMenu(menu, leftPanel) {
         panel.style.textAlign = 'center';
         panel.style.lineHeight = '30px';
         panel.style.border = '#F2F2F2 solid 1px';
+        panel.style.cursor = 'pointer';
         leftPanel.append(panel);
+        clickHandler(panel, url[i], container_right);
+    }
+}
+
+function clickHandler(panel, url, container) {
+    panel.onclick = function () {
+        container.src = url;
     }
 }

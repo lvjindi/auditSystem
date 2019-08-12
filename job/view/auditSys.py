@@ -7,6 +7,12 @@ from job.serializers import TableSerializer, QuestionSerializer, JobSerializer
 from utils.api.api import APIView, validate_serializer
 
 
+class JobManagementAPI(APIView):
+    @office_head_required
+    def get(self, request):
+        return render(request, 'jobManagement.html')
+
+
 class JobPublicAPI(APIView):
     @office_head_required
     def get(self, request):
@@ -24,6 +30,20 @@ class JobPublicAPI(APIView):
         except ValidationError as e:
             print(e)
             return self.error(msg=str(e))
+
+
+class JobAPI(APIView):
+    def get(self, request):
+        if (request.user.role == 'Office Head'):
+            job = Job.objects.filter(created_by=request.user)
+        else:
+            job = Job.objects.all()
+
+        for item in job:
+            item.department = item.get_department_display()
+            item.create_time = item.create_time.strftime('%Y-%m-%d ')
+            item.last_update_time = item.last_update_time.strftime('%Y-%m-%d')
+        return self.success(self.paginate_data(request, job, JobSerializer))
 
 
 class TableNameAPI(APIView):

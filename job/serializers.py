@@ -11,14 +11,20 @@ class TableSerializer(serializers.Serializer):
 
 
 class JobSerializer(serializers.Serializer):
-    created_by = UserRegisterSerializer()
-    table = TableSerializer()
-    department = serializers.CharField(max_length=2)
+    id = serializers.IntegerField()
     position = serializers.CharField(max_length=64)
-    deadline = serializers.DateTimeField()
+    department = serializers.CharField(max_length=2)
     salary = serializers.CharField(max_length=64)
-    describe = serializers.CharField(max_length=64 * 64)
-    requirement = serializers.CharField(max_length=64 * 64)
+    table= TableSerializer()
+    created_by = UserRegisterSerializer()
+    create_time = serializers.DateTimeField()
+    last_update_time = serializers.DateTimeField()
+
+    #
+    # deadline = serializers.DateTimeField()
+    #
+    # describe = serializers.CharField(max_length=64 * 64)
+    # requirement = serializers.CharField(max_length=64 * 64)
 
 
 class QuestionSerializer(serializers.Serializer):

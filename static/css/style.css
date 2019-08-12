@@ -226,4 +226,5 @@ button {
     border-radius: 5px;
     font-size: 14px;
     letter-spacing: 3px;
+    cursor: pointer;
 }
