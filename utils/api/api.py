@@ -144,12 +144,13 @@ class APIView(View):
         if limit < 0 or limit > 250:
             limit = 10
         try:
-            offset = int(request.GET.get("page", "0"))
+            offset = int(request.GET.get("page", "1"))
         except ValueError:
-            offset = 0
+            offset = 1
         if offset < 0:
-            offset = 0
-        results = query_set[offset:offset + limit]
+            offset = 1
+        results = query_set[(offset - 1) * limit:limit * offset]
+        # results = query_set[offset:offset + limit]
         if object_serializer:
             count = query_set.count()
             results = object_serializer(results, many=True).data

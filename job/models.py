@@ -20,10 +20,17 @@ class Table(models.Model):
     class Meta:
         db_table = 'audit_sys_table'
 
+    def __str__(self):
+        return self.title
+
 
 class Job(models.Model):
     DepartmentType = (
         (Department.COMPUTER, u'计算机与信息科学学院'),
+    )
+    StatusType = (
+        ('0', '已发布'),
+        ('1', '已失效'),
     )
     created_by = models.ForeignKey(User, on_delete=None)
     department = models.TextField(choices=DepartmentType)
@@ -32,6 +39,8 @@ class Job(models.Model):
     salary = models.TextField(null=True)
     describe = models.TextField(null=True)
     requirement = models.TextField(null=True)
+    status = models.TextField(choices=StatusType, default='0')
+    account = models.IntegerField(default=0)  # 浏览人数
     table = models.OneToOneField(Table, on_delete=models.CASCADE, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)

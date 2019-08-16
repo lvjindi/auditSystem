@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import djcelery
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'account',
     'index',
     'job',
+    'djcelery',
 ]
 
 MIDDLEWARE = [
@@ -144,3 +147,13 @@ STATICFILES_DIRS = (
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media').replace('\\', '/')
 FILE_ROOT = os.path.join(BASE_DIR, 'static/media/uploadFile').replace('\\', '/')
 # MEDIA_URL = '/static/media/'
+
+
+# 配置celery（定时任务）
+djcelery.setup_loader()  # 加载djcelery
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+CELERY_ACCEPT_CONTENT = ["json"]
+BROKER_URL = 'redis://127.0.0.1:6379/0'  # redis作为中间件
+BROKER_TRANSPORT = 'redis'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'

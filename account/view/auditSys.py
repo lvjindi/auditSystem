@@ -59,5 +59,5 @@ class RoleAPI(APIView):
             data = [user.role, user.username]
             return self.success(data)
         else:
-            data=[None]
+            data = [None]
             return self.success(data)

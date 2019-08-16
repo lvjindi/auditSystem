@@ -1,14 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
+from django.utils import timezone
 
-from account.decorators import office_head_required
+from account.decorators import office_head_required, login_required
 from job.models import Job, Table, Question
 from job.serializers import TableSerializer, QuestionSerializer, JobSerializer
 from utils.api.api import APIView, validate_serializer
 
 
 class JobManagementAPI(APIView):
-    @office_head_required
     def get(self, request):
         return render(request, 'jobManagement.html')
 
@@ -22,10 +22,15 @@ class JobPublicAPI(APIView):
     def post(self, request):
         try:
             data = request.data
-            job = Job.objects.create(department=data['department'], position=data['position'],
-                                     deadline=data['deadline'], salary=data['salary'],
-                                     describe=data['describe'], requirement=data['requirement'],
-                                     table_id=data['table_id'], created_by=request.user)
+
+            create_time = timezone.now()
+            if str(create_time) > data['deadline']:
+                raise ValidationError("任务截至时间不能早于当前时间")
+            else:
+                job = Job.objects.create(department=data['department'], position=data['position'],
+                                         deadline=data['deadline'], salary=data['salary'],
+                                         describe=data['describe'], requirement=data['requirement'],
+                                         table_id=data['table_id'], created_by=request.user)
             return self.success(JobSerializer(job).data)
         except ValidationError as e:
             print(e)
@@ -34,16 +39,41 @@ class JobPublicAPI(APIView):
 
 class JobAPI(APIView):
     def get(self, request):
-        if (request.user.role == 'Office Head'):
-            job = Job.objects.filter(created_by=request.user)
+        id = request.GET.get('id')
+        if id:
+            try:
+                job = Job.objects.get(id=id)
+                job.department = job.get_department_display()
+                job.status = job.get_status_display()
+                job.deadline = job.deadline.strftime('%Y-%m-%d %H:%m')
+                job.create_time = job.create_time.strftime('%Y-%m-%d %H:%m')
+                job.last_update_time = job.last_update_time.strftime('%Y-%m-%d %H:%m')
+                return self.success(JobSerializer(job).data)
+            except Job.DoesNotExist:
+                return self.error("Job does not exist")
         else:
-            job = Job.objects.all()
+            if request.user.is_authenticated:
+                if request.user.role == 'Office Head':
+                    job = Job.objects.filter(created_by=request.user).order_by('-id')
+                else:
+                    job = Job.objects.all().order_by('-id')
+            else:
+                job = Job.objects.all().order_by('-id')
 
-        for item in job:
-            item.department = item.get_department_display()
-            item.create_time = item.create_time.strftime('%Y-%m-%d ')
-            item.last_update_time = item.last_update_time.strftime('%Y-%m-%d')
-        return self.success(self.paginate_data(request, job, JobSerializer))
+            for item in job:
+                item.department = item.get_department_display()
+                item.status = item.get_status_display()
+                item.deadline = item.deadline.strftime('%Y-%m-%d %H:%m')
+                item.create_time = item.create_time.strftime('%Y-%m-%d %H:%m')
+                item.last_update_time = item.last_update_time.strftime('%Y-%m-%d %H:%m')
+            return self.success(self.paginate_data(request, job, JobSerializer))
+
+    @office_head_required
+    def delete(self, request):
+        job_id = request.GET.get('id')
+        if job_id:
+            Job.objects.filter(id=job_id).delete()
+            return self.success()
 
 
 class TableNameAPI(APIView):
@@ -108,9 +138,10 @@ class QuestionAPI(APIView):
         except Exception:
             return self.error("Error")
 
-    @office_head_required
+    @login_required
     def get(self, request):
         table_id = request.GET.get('id')
+
         table = Question.objects.filter(table_id=table_id)
         return self.success(self.paginate_data(request, table, QuestionSerializer))
 
@@ -122,6 +153,18 @@ class QuestionAPI(APIView):
             return self.success()
 
 
+class TableTemplate(APIView):
+    def get(self, request):
+        return render(request, 'tableTemplate.html')
+
+
 class JobTemplate(APIView):
     def get(self, request):
-        return render(request, 'jobTemplate.html')
+        id = request.GET.get('id')
+        try:
+            job = Job.objects.get(id=id)
+            job.account = job.account + 1
+            job.save()
+            return render(request, 'jobTemplate.html')
+        except Job.DoesNotExist:
+            return self.error("Job does not exist")

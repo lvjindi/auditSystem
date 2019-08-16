@@ -78,3 +78,6 @@ class User(AbstractBaseUser):
     class Meta:
         db_table = 'audit_sys_user'
         ordering = ['id']
+
+    def __str__(self):
+        return self.username

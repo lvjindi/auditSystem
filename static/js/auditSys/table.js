@@ -106,19 +106,33 @@ function updateQuestion(id, type, title) {
 function initTest() {
     var url = window.location.href.split('?');
     var id;
+    var table_id;
+    var tableName;
     if (url.length > 1) {
-        id = url[1].substr(url[1].indexOf('=') + 1, url[1].length - 1);
-        var table_btn = document.getElementsByClassName('tabelBtm')[0];
-        var next_ele = table_btn.nextElementSibling;
-        var parent = table_btn.parentNode;
-        parent.removeChild(table_btn);
-        var a = document.createElement('a');
-        a.href = 'createTable?id=' + id;
-        a.innerText = getCookie('tableName');
-        a.onclick = function () {
-            storeCookie();
+        if (url[1].indexOf('table_id=') != -1) {
+            table_id = url[1].substr(url[1].indexOf('table_id=') + 9, url[1].length - 1);
+            alert(table_id)
+            tableName = getCookie('tableName');
+            transferBtn(table_id, tableName);
+        } else if (url[1].indexOf('id=') != -1) {
+            id = url[1].substr(url[1].indexOf('id=') + 3, url[1].length - 1);
+            $.ajax({
+                type: 'GET',
+                url: 'job?id=' + id,
+                dataType: 'json',
+                success: function (data) {
+                    document.getElementsByName('department')[0].value = data['department'];
+                    document.getElementsByName('position')[0].value = data['position'];
+                    document.getElementsByName('deadline')[0].value = data['deadline'];
+                    document.getElementsByName('salary')[0].value = data['salary'];
+                    document.getElementsByName('describe')[0].value = data['describe'];
+                    document.getElementsByName('requirement')[0].value = data['requirement'];
+                    table_id = data['table']['id'];
+                    tableName = data['table']['title'];
+                    transferBtn(table_id, tableName);
+                }
+            })
         }
-        next_ele.before(a);
 
     }
     getCookie('department') == null ?
@@ -134,7 +148,19 @@ function initTest() {
     getCookie('requirement') == null ?
         document.getElementsByName('requirement')[0].value = '' : document.getElementsByName('requirement')[0].value = getCookie('requirement');
 
-
+    function transferBtn(table_id, tableName) {
+        var table_btn = document.getElementsByClassName('tabelBtm')[0];
+        var next_ele = table_btn.nextElementSibling;
+        var parent = table_btn.parentNode;
+        parent.removeChild(table_btn);
+        var a = document.createElement('a');
+        a.href = 'createTable?id=' + table_id;
+        a.innerText = tableName;
+        a.onclick = function () {
+            storeCookie();
+        }
+        next_ele.before(a);
+    }
 }
 
 
@@ -354,12 +380,22 @@ function tableInit() {
         container.appendChild(moduleDiv);
 
         previewBtn.onclick = function () {
-            window.location.href = 'jobTemplate?id=' + id;
+            window.location.href = 'tableTemplate?id=' + id;
         }
 
+        var host = window.location.host;
+        var preUrl = 'http://' + host + '/api/jobManagement';
+
+        // if (document.referrer == preUrl) {
+        //     okBtn.onclick = function () {
+        //         window.location.href = 'jobManagement';
+        //     }
+        // } else {
         okBtn.onclick = function () {
-            window.location.href = 'jobPublic?id=' + id;
+            window.location.href = 'jobPublic?table_id=' + id;
         }
+        // }
+
 
     }
 }
@@ -373,58 +409,196 @@ function tableTemplateInit() {
         dataType: 'json',
         url: 'question?id=' + id,
         success: function (data) {
-            var container = document.getElementById('templateContainer');
-            var pageTitle = document.createElement('div');
-            pageTitle.id = 'pageTitle';
-            pageTitle.style.marginBottom = '30px';
-            pageTitle.style.marginTop = '20px';
-            pageTitle.innerText = data[0]['table']['title'];
-            var returnBtn = document.createElement('button');
-            returnBtn.innerText = '返回';
-            returnBtn.style.float = 'right';
-            returnBtn.style.height = '35px';
-            returnBtn.style.width = '70px';
-            returnBtn.style.marginRight = '20px';
+            if (!data.error) {
+                var container = document.getElementById('templateContainer');
+                var pageTitle = document.createElement('div');
+                pageTitle.id = 'pageTitle';
+                pageTitle.style.marginBottom = '30px';
+                pageTitle.style.marginTop = '20px';
+                pageTitle.innerText = data['rows'][0]['table']['title'];
+                var returnBtn = document.createElement('button');
+                returnBtn.innerText = '返回';
+                returnBtn.style.float = 'right';
+                returnBtn.style.height = '35px';
+                returnBtn.style.width = '70px';
+                returnBtn.style.marginRight = '20px';
 
-            returnBtn.onclick = function () {
-                window.location.href = 'createTable?id=' + id;
-            }
-
-            container.appendChild(returnBtn);
-            container.appendChild(pageTitle);
-
-            for (var i = 0; i < data.length; i++) {
-                var questionPanel = document.createElement('div');
-                questionPanel.style.height = '15%';
-                questionPanel.style.marginTop = '10px';
-                questionPanel.style.marginLeft = '20px';
-                questionPanel.style.width = '60%';
-                questionPanel.style.paddingLeft = '25%';
-
-                var label = document.createElement('label');
-                var question;
-                if (data[i]['answer_type'] == 'Text') {
-                    question = document.createElement('input');
-                    question.type = 'text';
-                } else if (data[i]['answer_type'] == 'Text Area') {
-                    question = document.createElement('textarea');
-                } else {
-                    question = document.createElement('input');
-                    question.type = 'file';
+                returnBtn.onclick = function () {
+                    history.go(-1);
                 }
-                question.id = 'question-' + data[i]['id'];
 
-                label.innerText = data[i]['title'] + ':';
-                questionPanel.appendChild(label);
-                questionPanel.appendChild(question);
+                container.appendChild(returnBtn);
+                container.appendChild(pageTitle);
 
-                container.appendChild(questionPanel);
+                for (var i = 0; i < data['rows'].length; i++) {
+                    var questionPanel = document.createElement('div');
+                    questionPanel.style.height = '15%';
+                    questionPanel.style.marginTop = '10px';
+                    questionPanel.style.marginLeft = '20px';
+                    questionPanel.style.width = '60%';
+                    questionPanel.style.paddingLeft = '25%';
+
+                    var label = document.createElement('label');
+                    var question;
+                    if (data['rows'][i]['answer_type'] == 'Text') {
+                        question = document.createElement('input');
+                        question.type = 'text';
+                    } else if (data['rows'][i]['answer_type'] == 'Text Area') {
+                        question = document.createElement('textarea');
+                    } else {
+                        question = document.createElement('input');
+                        question.type = 'file';
+                    }
+                    question.id = 'question-' + data['rows'][i]['id'];
+
+                    label.innerText = data['rows'][i]['title'] + ':';
+                    questionPanel.appendChild(label);
+                    questionPanel.appendChild(question);
+
+                    container.appendChild(questionPanel);
+                }
+            } else {
+                alert(data.error)
+                top.location = 'login';//跳出iframe框架
             }
+
         },
         error: function () {
             alert("error")
         }
     })
+
+}
+
+function jobTemInit() {
+    var url = window.location.href.split('?');
+    var id = url[1].substr(url[1].indexOf('=') + 1, url[1].length - 1);
+
+    var container = document.getElementById('jobTem');
+
+    var pageTitle = document.createElement('div');
+    pageTitle.id = 'pageTitle';
+    pageTitle.style.marginBottom = '30px';
+    pageTitle.style.marginTop = '20px';
+    pageTitle.style.padding = '0px 0px';
+
+    var returnBtn = document.createElement('button');
+    returnBtn.innerText = '返回';
+    returnBtn.style.float = 'right';
+    returnBtn.style.height = '35px';
+    returnBtn.style.width = '70px';
+    returnBtn.style.marginRight = '20px';
+
+    returnBtn.onclick = function () {
+        history.go(-1);
+    }
+
+    container.appendChild(returnBtn)
+    container.appendChild(pageTitle);
+    var label = document.createElement('label');
+    label.style.marginLeft = '15%';
+    label.style.fontWeight = 'bold';
+
+    var panel = document.createElement('div');
+    panel.style.maxWidth = '70%';
+    panel.style.height = 'auto';
+    panel.style.margin = '10px auto';
+    panel.style.background = '#F2F2F2';
+    panel.style.letterSpacing = '2px';
+    panel.style.padding = '5px 10px';
+
+    $.ajax({
+        type: 'GET',
+        url: 'job?id=' + id,
+        dataType: 'json',
+        success: function (data) {
+            if (!data.error) {
+                pageTitle.innerText = data['position'];
+
+                var div = document.createElement('div');
+                div.style.width = '32%';
+                div.style.margin = '-15px auto 30px auto';
+
+                var time = document.createElement('label');
+                time.style.fontSize = '12px';
+                time.innerText = '创建时间：' + data['create_time'];
+
+                var account = time.cloneNode(false);
+                time.style.marginLeft = '20px';
+                account.innerText = '浏览数：' + data['account'];
+
+                div.appendChild(time);
+                div.appendChild(account);
+                container.appendChild(div);
+
+                if (data['salary'] != null || data['salary'] != '') {
+                    var salaryLabel = label.cloneNode(false);
+                    salaryLabel.innerText = '薪资';
+                    var salaryPanel = panel.cloneNode(false);
+                    salaryPanel.innerText = data['salary'];
+                    container.appendChild(salaryLabel);
+                    container.appendChild(salaryPanel);
+                }
+
+                if (data['department'] != null || data['department'] != '') {
+                    var departLabel = label.cloneNode(false);
+                    departLabel.innerText = '招聘单位';
+                    var departPanel = panel.cloneNode(false);
+                    departPanel.innerText = data['department'];
+                    container.appendChild(departLabel);
+                    container.appendChild(departPanel);
+                }
+
+                if (data['deadline'] != null || data['deadline'] != '') {
+                    var deadLineLabel = label.cloneNode(false);
+                    deadLineLabel.innerText = '截止时间';
+                    var deadLinePanel = panel.cloneNode(false);
+                    deadLinePanel.innerText = data['deadline'];
+                    container.appendChild(deadLineLabel);
+                    container.appendChild(deadLinePanel);
+                }
+
+                if (data['describe'] != null || data['describe'] != '') {
+                    var descrLabel = label.cloneNode(false);
+                    descrLabel.innerText = '岗位描述';
+                    var descrPanel = panel.cloneNode(false);
+                    descrPanel.innerText = data['describe'];
+                    container.appendChild(descrLabel);
+                    container.appendChild(descrPanel);
+                }
+
+                if (data['requirement'] != null || data['requirement'] != '') {
+                    var reqLabel = label.cloneNode(false);
+                    reqLabel.innerText = '任职资格';
+                    var reqPanel = panel.cloneNode(false);
+                    reqPanel.innerText = data['requirement'];
+                    container.appendChild(reqLabel);
+                    container.appendChild(reqPanel);
+                }
+
+                // if (role != 'Office Head') {
+                var appBtn = document.createElement('button');
+                appBtn.style.height = '40px';
+                appBtn.style.marginLeft = '45%';
+                appBtn.style.marginTop = '30px';
+                appBtn.innerText = '申请岗位';
+                container.appendChild(appBtn);
+                appBtn.onclick = function () {
+                    window.location.href = 'tableTemplate?id=' + data['table']['id'];
+                }
+                // }
+            } else {
+                alert(data.error)
+            }
+
+
+        },
+        error: function (data) {
+            console.log()
+        }
+
+    })
+
 
 }
 
@@ -473,8 +647,8 @@ function getQuestion(id) {
         dataType: 'json',
         async: false,
         success: function (data) {
-            if (data.length > 0) {
-                tmp = data;
+            if (data['rows'].length > 0) {
+                tmp = data['rows'];
             } else {
                 tmp = null;
             }
@@ -499,3 +673,4 @@ function delQuestion(id) {
 
     })
 }
+
