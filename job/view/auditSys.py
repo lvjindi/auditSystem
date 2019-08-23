@@ -1,10 +1,15 @@
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
+from django.utils.datetime_safe import datetime
 from django.core.exceptions import ValidationError
+
 from django.shortcuts import render
 from django.utils import timezone
 
 from account.decorators import office_head_required, login_required
 from job.models import Job, Table, Question
 from job.serializers import TableSerializer, QuestionSerializer, JobSerializer
+from job.tasks import changeStatus
 from utils.api.api import APIView, validate_serializer
 
 
@@ -18,31 +23,14 @@ class JobPublicAPI(APIView):
     def get(self, request):
         return render(request, 'jobPublic.html')
 
-    @office_head_required
-    def post(self, request):
-        try:
-            data = request.data
-
-            create_time = timezone.now()
-            if str(create_time) > data['deadline']:
-                raise ValidationError("任务截至时间不能早于当前时间")
-            else:
-                job = Job.objects.create(department=data['department'], position=data['position'],
-                                         deadline=data['deadline'], salary=data['salary'],
-                                         describe=data['describe'], requirement=data['requirement'],
-                                         table_id=data['table_id'], created_by=request.user)
-            return self.success(JobSerializer(job).data)
-        except ValidationError as e:
-            print(e)
-            return self.error(msg=str(e))
-
 
 class JobAPI(APIView):
+
     def get(self, request):
         id = request.GET.get('id')
         if id:
             try:
-                job = Job.objects.get(id=id)
+                job = Job.objects.get(id=id, is_deleted=False)
                 job.department = job.get_department_display()
                 job.status = job.get_status_display()
                 job.deadline = job.deadline.strftime('%Y-%m-%d %H:%m')
@@ -54,26 +42,104 @@ class JobAPI(APIView):
         else:
             if request.user.is_authenticated:
                 if request.user.role == 'Office Head':
-                    job = Job.objects.filter(created_by=request.user).order_by('-id')
+                    job = Job.objects.filter(created_by=request.user, is_deleted=False).order_by('-id')
+
                 else:
-                    job = Job.objects.all().order_by('-id')
+                    job = Job.objects.filter(is_deleted=False).order_by('-id')
             else:
-                job = Job.objects.all().order_by('-id')
+                job = Job.objects.filter(is_deleted=False).order_by('-id')
 
             for item in job:
-                item.department = item.get_department_display()
+                # item.department = item.get_department_display()
                 item.status = item.get_status_display()
-                item.deadline = item.deadline.strftime('%Y-%m-%d %H:%m')
-                item.create_time = item.create_time.strftime('%Y-%m-%d %H:%m')
-                item.last_update_time = item.last_update_time.strftime('%Y-%m-%d %H:%m')
+                if item.deadline != None:
+                    item.deadline = item.deadline.strftime('%Y-%m-%d %H:%M')
+                item.create_time = item.create_time.strftime('%Y-%m-%d %H:%M')
+                item.last_update_time = item.last_update_time.strftime('%Y-%m-%d %H:%M')
             return self.success(self.paginate_data(request, job, JobSerializer))
+
+    @office_head_required
+    def post(self, request):
+        try:
+            data = request.data
+            """ BlockingScheduler 阻塞式调度器
+                BackgroundScheduler 后台调度器
+            """
+
+            create_time = datetime.now()
+            "deadline为''时，不执行定时任务"
+            if data['deadline'] != '':
+                deadline = datetime.strptime(data['deadline'].replace('T', ' '), '%Y-%m-%d %H:%M')
+                if str(create_time) > data['deadline']:
+                    raise ValidationError("任务截至时间不能早于当前时间")
+                else:
+                    job = Job.objects.create(department_id=data['department'], position=data['position'],
+                                             deadline=data['deadline'], salary=data['salary'],
+                                             describe=data['describe'], requirement=data['requirement'],
+                                             other=data['other'],
+                                             table_id=data['table_id'], created_by=request.user)
+                    sched = BackgroundScheduler()
+                    task = sched.add_job(self.change_job_status, 'date', run_date=deadline, args=[job.id])
+                    sched.start()
+                    job.task_id = task.id
+                    job.save()
+                    print(task.id)
+            else:
+                job = Job.objects.create(department_id=data['department'], position=data['position'],
+                                         deadline=None, salary=data['salary'],
+                                         describe=data['describe'], requirement=data['requirement'],
+                                         other=data['other'],
+                                         table_id=data['table_id'], created_by=request.user)
+            return self.success(JobSerializer(job).data)
+
+        except ValidationError as e:
+            print(e)
+            return self.error(msg=str(e))
+
+    def change_job_status(self, id):
+        print('start')
+        try:
+            job = Job.objects.get(id=id)
+        except Job.DoesNotExist:
+            return self.error("Job does not exist!")
+        job.status = True
+        job.save()
+
+    @office_head_required
+    def put(self, request):
+        try:
+            data = request.data
+            job_id = request.GET.get('id')
+            if job_id:
+                try:
+                    job = Job.objects.get(id=job_id)
+                except Job.DoesNotExist:
+                    return self.error("Job does not exist")
+            for k, v in data.items():
+                setattr(job, k, v)
+            job.save()
+            if job.task_id != '':
+                pass
+            return self.success(JobSerializer(job).data)
+        except Exception as e:
+            return self.error("error")
 
     @office_head_required
     def delete(self, request):
         job_id = request.GET.get('id')
         if job_id:
-            Job.objects.filter(id=job_id).delete()
-            return self.success()
+            try:
+                job = Job.objects.get(id=job_id)
+                table = Table.objects.get(id=job.table_id)
+                question = Question.objects.filter(table=table.id)
+                setattr(table, "is_deleted", True)
+                question.update(is_deleted=True)
+                setattr(job, "is_deleted", True)
+                table.save()
+                job.save()
+                return self.success()
+            except Job.DoesNotExist:
+                return self.error("Job does not exist")
 
 
 class TableNameAPI(APIView):
@@ -142,14 +208,15 @@ class QuestionAPI(APIView):
     def get(self, request):
         table_id = request.GET.get('id')
 
-        table = Question.objects.filter(table_id=table_id)
+        table = Question.objects.filter(table_id=table_id, is_deleted=False)
         return self.success(self.paginate_data(request, table, QuestionSerializer))
 
     @office_head_required
     def delete(self, request):
         question_id = request.GET.get('id')
         if question_id:
-            Question.objects.filter(id=question_id).delete()
+            question = Question.objects.filter(id=question_id)
+            question.update(is_deleted=True)
             return self.success()
 
 

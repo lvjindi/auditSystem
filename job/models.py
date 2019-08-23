@@ -25,25 +25,28 @@ class Table(models.Model):
 
 
 class Job(models.Model):
-    DepartmentType = (
-        (Department.COMPUTER, u'计算机与信息科学学院'),
-    )
+    # DepartmentType = (
+    #     ('0', u'计算机与信息科学学院'),
+    # )
     StatusType = (
-        ('0', '已发布'),
-        ('1', '已失效'),
+        (True, '过期'),
+        (False, '发布'),
     )
     created_by = models.ForeignKey(User, on_delete=None)
-    department = models.TextField(choices=DepartmentType)
+    department = models.ForeignKey(Department, on_delete=None)
     position = models.TextField()
     deadline = models.DateTimeField(null=True)
     salary = models.TextField(null=True)
     describe = models.TextField(null=True)
     requirement = models.TextField(null=True)
-    status = models.TextField(choices=StatusType, default='0')
+    other = models.TextField(null=True)
+    status = models.BooleanField(choices=StatusType, default=False)
     account = models.IntegerField(default=0)  # 浏览人数
     table = models.OneToOneField(Table, on_delete=models.CASCADE, null=True)
+    task_id = models.TextField(null=True, help_text="定时任务ID")
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'audit_sys_job'
@@ -61,6 +64,7 @@ class Question(models.Model):
     answer_type = models.TextField(choices=AnswerType)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'audit_sys_question'
@@ -72,6 +76,7 @@ class Answer(models.Model):
     answer = models.TextField()
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'audit_sys_answer'

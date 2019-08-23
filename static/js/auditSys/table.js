@@ -3,14 +3,17 @@ function nextStep() {
     window.location.href = 'tableName';
 }
 
+
 function storeCookie() {
-    setCookie('department', document.getElementsByName('department')[0].value);
-    setCookie('position', document.getElementsByName('position')[0].value);
-    setCookie('deadline', document.getElementsByName('deadline')[0].value);
-    setCookie('salary', document.getElementsByName('salary')[0].value);
-    setCookie('describe', document.getElementsByName('describe')[0].value);
-    setCookie('requirement', document.getElementsByName('requirement')[0].value);
+    localStorage.setItem('departmentId', $('#department').combobox('getValue'));
+    localStorage.setItem('position', $('#position').val());
+    localStorage.setItem('deadline', $('#deadline').val());
+    localStorage.setItem('salary', $('#salary').val());
+    localStorage.setItem('describe', $('#describe').texteditor('getValue'));
+    localStorage.setItem('requirement', $('#requirement').texteditor('getValue'));
+    localStorage.setItem('other', $('#other').texteditor('getValue'));
 }
+
 
 function setCookie(name, value) {
     var argv = setCookie.arguments;
@@ -32,12 +35,6 @@ function getCookie(name) {
         return null;
 }
 
-
-function delCookie(name) {
-    var expdate = new Date();
-    expdate.setTime(expdate.getTime() - (86400 * 1000 * 1));
-    setCookie(name, "", expdate);
-}
 
 function tableName() {
     var title = document.getElementById('tableTitle').value;
@@ -108,45 +105,64 @@ function initTest() {
     var id;
     var table_id;
     var tableName;
+
     if (url.length > 1) {
         if (url[1].indexOf('table_id=') != -1) {
             table_id = url[1].substr(url[1].indexOf('table_id=') + 9, url[1].length - 1);
-            alert(table_id)
             tableName = getCookie('tableName');
             transferBtn(table_id, tableName);
+            setFormValue();
         } else if (url[1].indexOf('id=') != -1) {
             id = url[1].substr(url[1].indexOf('id=') + 3, url[1].length - 1);
-            $.ajax({
-                type: 'GET',
-                url: 'job?id=' + id,
-                dataType: 'json',
-                success: function (data) {
-                    document.getElementsByName('department')[0].value = data['department'];
-                    document.getElementsByName('position')[0].value = data['position'];
-                    document.getElementsByName('deadline')[0].value = data['deadline'];
-                    document.getElementsByName('salary')[0].value = data['salary'];
-                    document.getElementsByName('describe')[0].value = data['describe'];
-                    document.getElementsByName('requirement')[0].value = data['requirement'];
-                    table_id = data['table']['id'];
-                    tableName = data['table']['title'];
-                    transferBtn(table_id, tableName);
-                }
-            })
+
+            var returnBtn = document.createElement('button');
+            returnBtn.innerText = '返回';
+            returnBtn.style.float = 'right';
+            returnBtn.style.height = '35px';
+            returnBtn.style.width = '70px';
+            returnBtn.style.marginRight = '20px';
+            returnBtn.onclick = function () {
+                history.go(-1);
+            }
+
+            document.getElementById('pageTitle').appendChild(returnBtn);
+
+            setFormValue();
+            var table = document.getElementById('publicTable');
+            document.getElementById('publicTable').deleteRow(table.rows.length - 2);
+
+            var btn = document.getElementById('submitJob');
+            var parent = btn.parentNode;
+            var newBtn = btn.cloneNode(false);
+            newBtn.innerText = '编辑';
+            newBtn.style.marginTop = '0';
+
+            parent.removeChild(btn);
+            parent.appendChild(newBtn);
+            newBtn.onclick = function () {
+                jobEdit(id);
+            }
         }
 
     }
-    getCookie('department') == null ?
-        document.getElementsByName('department')[0].value = '' : document.getElementsByName('department')[0].value = getCookie('department');
-    getCookie('position') == null ?
-        document.getElementsByName('position')[0].value = '' : document.getElementsByName('position')[0].value = getCookie('position');
-    getCookie('deadline') == null ?
-        document.getElementsByName('deadline')[0].value = '' : document.getElementsByName('deadline')[0].value = getCookie('deadline');
-    getCookie('salary') == null ?
-        document.getElementsByName('salary')[0].value = '' : document.getElementsByName('salary')[0].value = getCookie('salary');
-    getCookie('describe') == null ?
-        document.getElementsByName('describe')[0].value = '' : document.getElementsByName('describe')[0].value = getCookie('describe');
-    getCookie('requirement') == null ?
-        document.getElementsByName('requirement')[0].value = '' : document.getElementsByName('requirement')[0].value = getCookie('requirement');
+
+    function setFormValue() {
+        $('#department').combobox('setValue', localStorage.getItem('departmentId'))
+        var deadline = localStorage.getItem('deadline').replace(' ', 'T');
+        localStorage.getItem('position') == null ?
+            $('#position').val('') : $('#position').textbox('setValue', localStorage.getItem('position'));
+        localStorage.getItem('deadline') == null ?
+            $('#deadline').val('') : $('#deadline').val(deadline);
+        localStorage.getItem('salary') == null ?
+            $('#salary').val('') : $('#salary').textbox('setValue', localStorage.getItem('salary'));
+        localStorage.getItem('describe') == null ?
+            $('#describe').texteditor('setValue', '') : $('#describe').texteditor('setValue', localStorage.getItem('describe'));
+        localStorage.getItem('requirement') == null ?
+            $('#requirement').texteditor('setValue', '') : $('#requirement').texteditor('setValue', localStorage.getItem('requirement'));
+        localStorage.getItem('other') == null ?
+            $('#other').texteditor('setValue', '') : $('#other').texteditor('setValue', localStorage.getItem('other'));
+    }
+
 
     function transferBtn(table_id, tableName) {
         var table_btn = document.getElementsByClassName('tabelBtm')[0];
@@ -159,7 +175,7 @@ function initTest() {
         a.onclick = function () {
             storeCookie();
         }
-        next_ele.before(a);
+        parent.appendChild(a)
     }
 }
 
@@ -167,6 +183,7 @@ function initTest() {
 function tableInit() {
     var url = window.location.href.split('?');
     var id = url[1].substr(url[1].indexOf('=') + 1, url[1].length - 1);
+
     var title = getCookie('tableName');
 
     var data = getQuestion(id);
@@ -386,15 +403,15 @@ function tableInit() {
         var host = window.location.host;
         var preUrl = 'http://' + host + '/api/jobManagement';
 
-        // if (document.referrer == preUrl) {
-        //     okBtn.onclick = function () {
-        //         window.location.href = 'jobManagement';
-        //     }
-        // } else {
-        okBtn.onclick = function () {
-            window.location.href = 'jobPublic?table_id=' + id;
+        if (document.referrer == preUrl) {
+            okBtn.onclick = function () {
+                window.location.href = 'jobManagement';
+            }
+        } else {
+            okBtn.onclick = function () {
+                window.location.href = 'jobPublic?table_id=' + id;
+            }
         }
-        // }
 
 
     }
@@ -437,7 +454,7 @@ function tableTemplateInit() {
                     questionPanel.style.marginLeft = '20px';
                     questionPanel.style.width = '60%';
                     questionPanel.style.paddingLeft = '25%';
-
+                    var br = document.createElement('br');
                     var label = document.createElement('label');
                     var question;
                     if (data['rows'][i]['answer_type'] == 'Text') {
@@ -453,6 +470,7 @@ function tableTemplateInit() {
 
                     label.innerText = data['rows'][i]['title'] + ':';
                     questionPanel.appendChild(label);
+                    questionPanel.appendChild(br);
                     questionPanel.appendChild(question);
 
                     container.appendChild(questionPanel);
@@ -507,127 +525,116 @@ function jobTemInit() {
     panel.style.letterSpacing = '2px';
     panel.style.padding = '5px 10px';
 
-    $.ajax({
-        type: 'GET',
-        url: 'job?id=' + id,
-        dataType: 'json',
-        success: function (data) {
-            if (!data.error) {
-                pageTitle.innerText = data['position'];
 
-                var div = document.createElement('div');
-                div.style.width = '32%';
-                div.style.margin = '-15px auto 30px auto';
+    pageTitle.innerText = localStorage.getItem('position');
 
-                var time = document.createElement('label');
-                time.style.fontSize = '12px';
-                time.innerText = '创建时间：' + data['create_time'];
+    var div = document.createElement('div');
+    div.style.width = '32%';
+    div.style.margin = '-15px auto 30px auto';
 
-                var account = time.cloneNode(false);
-                time.style.marginLeft = '20px';
-                account.innerText = '浏览数：' + data['account'];
+    var time = document.createElement('label');
+    time.style.fontSize = '12px';
+    time.innerText = '创建时间：' + localStorage.getItem('create_time');
 
-                div.appendChild(time);
-                div.appendChild(account);
-                container.appendChild(div);
+    var account = time.cloneNode(false);
+    time.style.marginLeft = '20px';
+    account.innerText = '浏览数：' + localStorage.getItem('account');
 
-                if (data['salary'] != null || data['salary'] != '') {
-                    var salaryLabel = label.cloneNode(false);
-                    salaryLabel.innerText = '薪资';
-                    var salaryPanel = panel.cloneNode(false);
-                    salaryPanel.innerText = data['salary'];
-                    container.appendChild(salaryLabel);
-                    container.appendChild(salaryPanel);
-                }
+    div.appendChild(time);
+    div.appendChild(account);
+    container.appendChild(div);
 
-                if (data['department'] != null || data['department'] != '') {
-                    var departLabel = label.cloneNode(false);
-                    departLabel.innerText = '招聘单位';
-                    var departPanel = panel.cloneNode(false);
-                    departPanel.innerText = data['department'];
-                    container.appendChild(departLabel);
-                    container.appendChild(departPanel);
-                }
+    if (localStorage.getItem('salary') != null || localStorage.getItem('salary') != '') {
+        var salaryLabel = label.cloneNode(false);
+        salaryLabel.innerText = '薪资';
+        var salaryPanel = panel.cloneNode(false);
+        salaryPanel.innerText = localStorage.getItem('salary')
+        container.appendChild(salaryLabel);
+        container.appendChild(salaryPanel);
+    }
 
-                if (data['deadline'] != null || data['deadline'] != '') {
-                    var deadLineLabel = label.cloneNode(false);
-                    deadLineLabel.innerText = '截止时间';
-                    var deadLinePanel = panel.cloneNode(false);
-                    deadLinePanel.innerText = data['deadline'];
-                    container.appendChild(deadLineLabel);
-                    container.appendChild(deadLinePanel);
-                }
+    if (localStorage.getItem('department') != null || localStorage.getItem('department') != '') {
+        var departLabel = label.cloneNode(false);
+        departLabel.innerText = '招聘单位';
+        var departPanel = panel.cloneNode(false);
+        departPanel.innerText = localStorage.getItem('department');
+        container.appendChild(departLabel);
+        container.appendChild(departPanel);
+    }
 
-                if (data['describe'] != null || data['describe'] != '') {
-                    var descrLabel = label.cloneNode(false);
-                    descrLabel.innerText = '岗位描述';
-                    var descrPanel = panel.cloneNode(false);
-                    descrPanel.innerText = data['describe'];
-                    container.appendChild(descrLabel);
-                    container.appendChild(descrPanel);
-                }
+    if (localStorage.getItem('deadline') != null || localStorage.getItem('deadline') != '') {
+        var deadLineLabel = label.cloneNode(false);
+        deadLineLabel.innerText = '截止时间';
+        var deadLinePanel = panel.cloneNode(false);
+        deadLinePanel.innerText = localStorage.getItem('deadline');
+        container.appendChild(deadLineLabel);
+        container.appendChild(deadLinePanel);
+    }
 
-                if (data['requirement'] != null || data['requirement'] != '') {
-                    var reqLabel = label.cloneNode(false);
-                    reqLabel.innerText = '任职资格';
-                    var reqPanel = panel.cloneNode(false);
-                    reqPanel.innerText = data['requirement'];
-                    container.appendChild(reqLabel);
-                    container.appendChild(reqPanel);
-                }
+    if (localStorage.getItem('describe') != null || localStorage.getItem('describe') != '') {
+        var descrLabel = label.cloneNode(false);
+        descrLabel.innerText = '岗位描述';
+        var descrPanel = panel.cloneNode(false);
+        descrPanel.innerHTML = localStorage.getItem('describe');
+        container.appendChild(descrLabel);
+        container.appendChild(descrPanel);
+    }
 
-                // if (role != 'Office Head') {
-                var appBtn = document.createElement('button');
-                appBtn.style.height = '40px';
-                appBtn.style.marginLeft = '45%';
-                appBtn.style.marginTop = '30px';
-                appBtn.innerText = '申请岗位';
-                container.appendChild(appBtn);
-                appBtn.onclick = function () {
-                    window.location.href = 'tableTemplate?id=' + data['table']['id'];
-                }
-                // }
-            } else {
-                alert(data.error)
-            }
+    if (localStorage.getItem('requirement') != null || localStorage.getItem('requirement') != '') {
+        var reqLabel = label.cloneNode(false);
+        reqLabel.innerText = '任职资格';
+        var reqPanel = panel.cloneNode(false);
+        reqPanel.innerHTML = localStorage.getItem('requirement');
+        container.appendChild(reqLabel);
+        container.appendChild(reqPanel);
+    }
 
+    if (localStorage.getItem('other') != null || localStorage.getItem('other') != '') {
+        var otherLabel = label.cloneNode(false);
+        otherLabel.innerText = '其他';
+        var otherPanel = panel.cloneNode(false);
+        otherPanel.innerHTML = localStorage.getItem('other');
+        container.appendChild(otherLabel);
+        container.appendChild(otherPanel);
+    }
 
-        },
-        error: function (data) {
-            console.log()
-        }
-
-    })
+    // if (role != 'Office Head') {
+    var appBtn = document.createElement('button');
+    appBtn.style.height = '40px';
+    appBtn.style.marginLeft = '45%';
+    appBtn.style.marginTop = '30px';
+    appBtn.innerText = '申请岗位';
+    container.appendChild(appBtn);
+    appBtn.onclick = function () {
+        window.location.href = 'tableTemplate?id=' + getCookie('tableId');
+    }
+    // }
 
 
 }
 
 function publicJob() {
     var data = {
-        'department': document.getElementsByName('department')[0].value,
-        'position': document.getElementsByName('position')[0].value,
-        'deadline': document.getElementsByName('deadline')[0].value,
-        'salary': document.getElementsByName('salary')[0].value,
-        'describe': document.getElementsByName('describe')[0].value,
-        'requirement': document.getElementsByName('requirement')[0].value,
+        'department': $('#department').combobox('getValue'),
+        'position': $('#position').val(),
+        'deadline': $('#deadline').val(),
+        'salary': $('#salary').val(),
+        'describe': $('#describe').texteditor('getValue'),
+        'requirement': $('#requirement').texteditor('getValue'),
+        'other': $('#other').texteditor('getValue'),
         'table_id': getCookie('tableId') == null ? '0' : getCookie('tableId'),
 
     }
 
     $.ajax({
         type: 'POST',
-        url: 'jobPublic',
+        url: 'job',
         data: data,
+        async: true,
         dataType: 'json',
         success: function (data) {
-            delCookie('department');
-            delCookie('position');
-            delCookie('deadline');
-            delCookie('salary');
-            delCookie('describe');
-            delCookie('requirement');
-            delCookie('tableName');
-            delCookie('tableId');
+            // delAllCookies();
+            localStorage.clear();
             if (data.error) {
                 alert(data.data)
             } else {
@@ -638,6 +645,37 @@ function publicJob() {
     })
 }
 
+function jobEdit(id) {
+    alert($('#department').combobox('getValue'))
+    var data = {
+        'id': id,
+        'department_id': $('#department').combobox('getValue'),
+        'position': $('#position').val(),
+        'deadline': $('#deadline').val(),
+        'salary': $('#salary').val(),
+        'describe': $('#describe').texteditor('getValue'),
+        'requirement': $('#requirement').texteditor('getValue'),
+        'other': $('#other').texteditor('getValue'),
+        'table_id': getCookie('tableId') == null ? '0' : getCookie('tableId'),
+    }
+    $.ajax({
+        type: 'PUT',
+        url: 'job?id=' + id,
+        data: data,
+        dataType: 'json',
+        success: function (data) {
+            alert("编辑成功");
+            // delAllCookies();
+            localStorage.clear();
+            window.location.href = 'jobManagement';
+        },
+        error: function () {
+            alert("Error");
+            console.log();
+        }
+
+    })
+}
 
 function getQuestion(id) {
     var tmp;

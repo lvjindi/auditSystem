@@ -5,9 +5,15 @@ from django.contrib.auth import login
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from account.models import User
-from account.serializers import UserRegisterSerializer
+from account.models import User, Department
+from account.serializers import UserRegisterSerializer, DepartmentSerializer
 from utils.api.api import APIView, validate_serializer
+
+
+class DepartmentAPI(APIView):
+    def get(self, request):
+        department = Department.objects.filter(is_deleted=0)
+        return self.success(DepartmentSerializer(department, many=True).data)
 
 
 class UserLoginAPI(APIView):
@@ -29,7 +35,7 @@ class UserRegisterAPI(APIView):
     def get(self, request):
         return render(request, 'auditSys/register.html')
 
-    @validate_serializer(UserRegisterSerializer)
+    # @validate_serializer(UserRegisterSerializer)
     def post(self, request):
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -40,7 +46,7 @@ class UserRegisterAPI(APIView):
             return self.error('Username already exists')
         if User.objects.filter(email=email).exists():
             return self.error('Email already exists')
-        user = User.objects.create(username=username, email=email, real_name=real_name, department=department)
+        user = User.objects.create(username=username, email=email, real_name=real_name, department_id=department)
         user.set_password(password)
         user.save()
         return HttpResponseRedirect('login')
@@ -56,7 +62,7 @@ class RoleAPI(APIView):
     def get(self, request):
         user = self.request.user
         if user.is_authenticated:
-            data = [user.role, user.username]
+            data = [user.role.name, user.username]
             return self.success(data)
         else:
             data = [None]

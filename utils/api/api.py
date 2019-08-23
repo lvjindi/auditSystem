@@ -27,6 +27,7 @@ class ContentType(object):
     url_encoded_request = "application/x-www-form-urlencoded"
     binary_response = "application/octet-stream"
     multipart_request = "multipart/form-data"
+    text_plain = "text/plain"
 
 
 class JSONParser(object):
