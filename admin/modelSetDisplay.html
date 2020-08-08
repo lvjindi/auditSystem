@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/table.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px">
+
+<div id="tb" style="padding-top:0px;height:auto;">
+    <div id="btnSets" style="margin-bottom:5px;">
+        <a href="#" onclick="addNet()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="editJob()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">编辑</a>
+        <a href="#" onclick="deleteJob()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        <a href="#" onclick="reload() " class="easyui-linkbutton" iconCls="icon-reload" plain="true">刷新</a>
+    </div>
+</div>
+
+<table class="easyui-datagrid" style="width:95%;height:auto;"
+       id="tdTable">
+</table>
+<script type="text/javascript">
+    var datagrid = document.getElementsByClassName('easyui-datagrid')[0];
+    datagrid.title = '数据集浏览';
+    var btnSets = document.getElementById('btnSets');
+    //btnSets.style.display = 'None';
+    $(function () {
+        var pager = $('#tdTable').datagrid('getPager');	// get the pager of datagrid
+        pager.pagination();
+        $('#tdTable').datagrid({
+            url: 'http://'+window.location.host+":8080/modelSet/query",
+            method: 'get',
+            columns: [[
+                {field: 'id', title: '序号', width: '80'},
+                {field: 'modelName', title: '模型名称', width: '200'},
+                {field: 'providerName', title: '提供者', width: '200'},
+                {field: 'dataName', title: '数据集', width: '200'},
+                {field: 'netStructName', title: '结构特征', width: '200'},
+                {field: 'function', title: '功能', width: '200'},
+                 {field: 'optimizerName', title: '优化器名称', width: '200'},
+                 {field: 'performance', title: '性能', width: '200'},
+            ]],
+            fitColumns: "true",
+            singleSelect: "true",
+            toolbar: "#tb",
+            rownumbers: "true",
+            pagination: "true",
+            onDblClickRow: function (index, row) {
+                $('#tdTable').datagrid("selectRow", index);
+                var currentRow = $('#tdTable').datagrid("getSelected");
+                storeLocal(currentRow);
+                window.location.href = 'jobTemplate?id=' + currentRow['id'];
+            },
+        })
+    })
+
+
+    function deleteJob() {
+        var currentRow = $('#tdTable').datagrid("getSelected");
+        if (currentRow == null) {
+            alert("请先选中一行")
+        } else {
+            if (confirm("确认删除？")) {
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify({'id': currentRow.id}),
+                    url:'http://'+window.location.host+ ':8080/modelSet/delete',
+                    dataType: 'json',
+                    contentType: "application/json;charset=UTF-8",
+                    success: function (data) {
+                        alert("成功");
+                        reload();
+                    },
+                    error: function () {
+                        console.log()
+                    }
+                })
+            }
+        }
+    }
+
+    function addNet() {
+        window.location.href = 'modelSetAdd.html';
+    }
+
+    function editJob() {
+        var currentRow = $('#tdTable').datagrid("getSelected");
+        if (currentRow == null) {
+            alert("请先选中一行")
+        } else {
+            storeLocal(currentRow);
+            window.location.href = 'modelSetAdd.html?id=' + currentRow.id
+        }
+    }
+
+    function reload() {
+        $('#tdTable').datagrid("reload");
+    }
+
+    function showName(value) {
+        if (value != null) {
+            return value.content;
+        }
+    }
+
+    function storeLocal(currentRow) {
+        localStorage.setItem('id', currentRow.id);
+        localStorage.setItem('modelId', currentRow.modelId);
+        localStorage.setItem('modelsunId', currentRow.modelsunId);
+        localStorage.setItem('optimizerId', currentRow.optimizerId);
+        localStorage.setItem('platformId', currentRow.platformId);
+        localStorage.setItem('dataId', currentRow.dataId);
+        localStorage.setItem('providerId', currentRow.providerId);
+        localStorage.setItem('performance', currentRow.performance);
+        localStorage.setItem('modelFile', currentRow.modelFile);
+    }
+</script>
+<script type="application/javascript">
+
+
+</script>
+</body>
+</html>

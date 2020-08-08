@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/table.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px">
+<div class="easyui-panel" title="添加神经网络模型" style="width:94%;padding-top:30px;padding-left: 50px;font-size: 15px">
+    <form id="ff" method="post" enctype="multipart/form-data" style="width:94%;">
+        <table>
+            <tr>
+                <td>模型名称 :</td>
+                <td><input name="modelName" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>简介:</td>
+                <td><input name="description" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>图片:</td>
+                <td><input name="picture" class="f1 easyui-filebox" required="true"></td>
+            </tr>
+            <tr>
+                <td>子网络库:</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="netStructId" required="true"/></td>
+            </tr>
+             <tr>
+                <td>功能:</td>
+                <td><input name="function" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>网络结构特征 :</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="city" required="true"/></td>
+            </tr>
+             <tr>
+                <td>训练数据集 :</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="city" required="true"/></td>
+            </tr>
+             <tr>
+                <td>训练数据增广 :</td>
+                <td><input name="email" class="f1 easyui-textbox" required="true"></input></td>
+            </tr>
+             <tr>
+                <td>模型大小 :</td>
+                <td><input name="email" class="f1 easyui-textbox" required="true"></input></td>
+            </tr>
+             <tr>
+                <td>评价标准 :</td>
+                <td><input name="email" class="f1 easyui-textbox" required="true"></input></td>
+            </tr>
+              <tr>
+                <td>性能 :</td>
+                <td><input name="email" class="f1 easyui-textbox" required="true"></input></td>
+            </tr>
+             <tr>
+                <td>优化器 :</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="city" required="true"/></td>
+            </tr>
+            <tr>
+                <td>平台 :</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="city" required="true"/></td>
+            </tr>
+            <tr>
+                <td>提供者 :</td>
+                <td><select class="easyui-combotree" url="data/city_data.json" name="city" required="true"/></td>
+            </tr>
+            <tr>
+                <td>模型python文件地址 :</td>
+                <td><input name="file" class="f1 easyui-filebox" required="true"></input></td>
+            </tr>
+             <tr>
+                <td>训练好的模型 :</td>
+                <td><input name="file" class="f1 easyui-filebox" required="true"></input></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Submit" onclick="visionSubmit()" style="margin-left: -50px"></input></td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+
+</body>
+</html>

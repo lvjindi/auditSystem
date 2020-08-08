@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../static/js/hizzgdev-jsmind-7e2dbec/style/jsmind.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="application/javascript" src="../static/js/hizzgdev-jsmind-7e2dbec/js/jsmind.js"></script>
+    <script type="text/javascript" src="../static/js/hizzgdev-jsmind-7e2dbec/js/jsmind.draggable.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px">
+<div id="jsmind_container">
+    <div id="btnSets" style="float:right;margin-bottom:5px;">
+        <a href="#" onclick="addNode()" class="easyui-linkbutton" iconCls="icon-add" plain="true">新增节点</a>
+        <a href="#" onclick="showTable()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">查看表格</a>
+
+    </div>
+</div>
+<script type="text/javascript">
+    $.ajax({
+        type: 'GET',
+        url: 'http://'+window.location.host+':8080/category/getAll',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            var n = data.content.length;
+            for (var i = 0; i < n; i++) {
+                if (data.content[i].parentid == '-1') {
+                    var root = data.content[i];
+                    data.content[i].isroot = true;
+                    break;
+                }
+            }
+            var num = 0;
+            for (var i = 0; i < n; i++) {
+                if (data.content[i].parentid == root.id) {
+                    num++;
+                }
+            }
+            num = parseInt(num / 2);
+            for (var i = 0; i < n; i++) {
+                if (data.content[i].parentid == root.id && num != 0) {
+                    data.content[i].direction = 'left';
+                    num--;
+                }
+            }
+
+            var mind = {
+                /* 元数据，定义思维导图的名称、作者、版本等信息 */
+                "meta": {
+                    "name": "example",
+                    "author": "hizzgdev@163.com",
+                    "version": "0.2"
+                },
+                /* 数据格式声明 */
+                "format": "node_array",
+                /* 数据内容 */
+                "data": data.content,
+            };
+            var options = {
+                container: 'jsmind_container',
+                editable: false,
+                theme: 'info'
+            };
+
+            var jm = new jsMind(options);
+            // 让 jm 显示这个 mind 即可
+            jm.show(mind);
+        },
+        error: function () {
+            console.log()
+        }
+    })
+
+   function addNode() {
+        window.location.href='categoryAdd.html';
+   }
+
+    //新增节点
+   /** function addNode() {
+        var jm = jsMind.current;
+        var selected_node = jm.get_selected_node(); // as parent of new node
+        if (!selected_node) {
+            alert('请选择一个节点！');
+            return;
+        }
+        var fHeight = 280;
+        if (selected_node.data.leave == 0) { //根节点新增时因为字段多，高度单独做调整
+            fHeight = 420;
+        }
+        var modelName = prompt('请输入子网络分类名称');
+        var data = {
+            'modelName': modelName,
+            'parentId': selected_node.id
+        }
+        $.ajax({
+            type: 'POST',
+            url: HOST + '/category/create',
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: "application/json;charset=UTF-8",
+            success: function (data) {
+                alert("新建节点成功");
+                window.location.href = 'categoryDisplay.html';
+            },
+            error: function () {
+                alert("Error");
+                console.log();
+            }
+
+        })
+       // layer_show('新增节点', '/Admin/Add?Id=' + selected_node.id, 600, fHeight);
+    }
+    **/
+
+    function showTable(){
+        window.location.href='categoryDisplay.html';
+    }
+
+</script>
+</body>
+</html>

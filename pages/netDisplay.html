@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="http://www.w3cschool.cc/try/jeasyui/datagrid-detailview.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/easyUiView.js"></script>
+
+</head>
+<body style="padding-left: 5%;padding-top: 30px">
+
+<div id="tb" style="padding:10px">
+    <span style="padding:10px">模型名:</span>
+    <input id="modelName" style="line-height:26px;border:1px solid #ccc;width: 12%">
+    <span style="padding:10px">提供者:</span>
+    <input id="providerName" style="line-height:26px;border:1px solid #ccc;width: 12%">
+    <span style="padding:10px">数据集:</span>
+    <input id="dsName" style="line-height:26px;border:1px solid #ccc;width: 12%">
+    <span style="padding:10px">优化器:</span>
+    <input id="opName" style="line-height:26px;border:1px solid #ccc;width: 12%">
+    <span style="padding:10px">结构特征:</span>
+    <input id="netStructName" style="line-height:26px;border:1px solid #ccc;width: 12%">
+    <a href="#" class="easyui-linkbutton" plain="true" onclick="doSearch()">Search</a>
+</div>
+
+<table class="easyui-datagrid" style="width:95%;height:auto;"
+       id="tdTable">
+</table>
+<script type="text/javascript">
+
+    var arr = window.parent.document.getElementById("container-right").contentWindow.location.search;
+    if (arr != null) {
+        var params = arr.substring(1).split("=")[1];
+    }
+    var datagrid = document.getElementsByClassName('easyui-datagrid')[0];
+    datagrid.title = decodeURI(params) + '浏览';
+
+    $(function () {
+        var pager = $('#tdTable').datagrid('getPager');	// get the pager of datagrid
+        pager.pagination();
+        $('#tdTable').datagrid({
+            url: 'http://'+window.location.host+":8080/modelSet/query?modelsunName=" + params,
+            method: 'get',
+            height: 'auto',
+            columns: [[
+                {field: 'id', title: '序号', width: '140'},
+                {field: 'modelName', title: '模型名', width: '140'},
+                {field: 'function', title: '功能', width: '180'},
+                {field: 'dataName', title: '数据集', width: '90'},
+                {field: 'performance', title: '性能', width: '70'},
+                {field: 'optimizerName', title: '优化器', width: '140'},
+                {field: 'netStructName', title: '结构特征', width: '140'},
+                {field: 'providerName', title: '提供者', width: '140'},
+            ]],
+            fitColumns: "true",
+            singleSelect: "true",
+            toolbar: "#tb",
+            rownumbers: "true",
+            pagination: "true",
+            view: detailview,
+            detailFormatter: function (index, row) {
+                return '<div class="ddv"></div>';
+            },
+            onExpandRow: function (index, row) {
+                var ddv = $(this).datagrid('getRowDetail', index).find('div.ddv');
+                $.ajax({
+                    method: 'get',
+                    url: 'http://'+window.location.host+':8080/modelSet/getModelSetDetail?id=' + row.id,
+                    dataType: 'json',
+                    contentType: "application/json;charset=UTF-8",
+                    async: false,
+                    success: function (data) {
+                        // document.getElementById('modelNameDetail').innerText='ttttt';
+                        var str = '<table id="dvTable" class="dvTable"  border=0 style="width:100%;">\n' +
+                            '<tr>\n' +
+                            '  <td  class="dv-label">模型名称: </td>\n' +
+                            '  <td id="modelNameDetail" >' + data[0].modelName + '</td>\n' +
+                            '  <td class="dv-label">简介:</td>\n' +
+                            '  <td id="descriptionDetail" border=0 >' + data[0].description + '</td>\n' +
+                            '  <td class="dv-label">子网络库: </td>\n' +
+                            '  <td id="categoryNameDetail">' + data[0].categoryName + '</td>\n' +
+                            ' </tr>\n' +
+                            ' <tr>\n' +
+
+                            '  <td class="dv-label">功能:</td>\n' +
+                            '  <td id="functionDetail">' + data[0].function + '</td>\n' +
+                            '  <td class="dv-label">训练数据增广: </td>\n' +
+                            '  <td id="extendDetail">' + data[0].extend + '</td>\n' +
+                            '  <td class="dv-label">模型大小:</td>\n' +
+                            '  <td id="modelSizeDetail">' + data[0].modelSize + '</td>\n' +
+                            ' </tr>\n' +
+                            ' <tr>\n' +
+                            '  <td class="dv-label">评价标准: </td>\n' +
+                            '  <td id="evaluationDetail">' + data[0].evaluation + '</td>\n' +
+                            '  <td class="dv-label">性能:</td>\n' +
+                            '  <td id="performanceDetail">' + data[0].performance + '</td>\n' +
+                            '  <td class="dv-label">优化器: </td>\n' +
+                            '  <td id="optimizerNameDetail">' + data[0].optimizerName + '</td>\n' +
+                            ' </tr>\n' +
+                            ' <tr>\n' +
+
+                            '  <td class="dv-label">平台:</td>\n' +
+                            '  <td id="platformContentDetail">' + data[0].platformContent + '</td>\n' +
+                            '  <td class="dv-label">提供者: </td>\n' +
+                            '  <td id="providerNameDetail">' + data[0].providerName + '</td>\n' +
+                            '  <td class="dv-label">模型python文件:</td>\n' +
+                            '  <td id="pythonFileDetail"><a href="http://'+window.location.host+':8080/file/download?fileName=' + data[0].pythonFile + '" download=' + data[0].pythonFile + '>' + data[0].pythonFile + '</a></td>\n' +
+                            ' </tr>\n' +
+
+                            ' <tr>\n' +
+                            '  <td class="dv-label">训练好的模型: </td>\n' +
+                            '  <td id="modelFileDetail"><a href="http://'+window.location.host+':8080/file/download?fileName=' + data[0].modelFile + '" download=' + data[0].modelFile + '>' + data[0].modelFile + '</a></td>\n' +
+                            '  <td class="dv-label">图片: </td>\n' +
+                            '  <td id="pictureDetail"><a href="http://'+window.location.host+':8080/file/download?fileName=' + data[0].picture + '" download=' + data[0].picture + '>' + data[0].picture + '</a></td>\n' +
+                            ' </tr>\n' +
+                            '</table>';
+                        ddv.html(str);
+
+                    },
+                    error: function () {
+                        alert("Error");
+                        console.log();
+                    }
+                })
+                $('#tdTable').datagrid('fixDetailRowHeight', index);
+            },
+            onDblClickRow: function (index, row) {
+                $('#tdTable').datagrid("selectRow", index);
+                var currentRow = $('#tdTable').datagrid("getSelected");
+                storeLocal(currentRow);
+                window.location.href = 'jobTemplate?id=' + currentRow['id'];
+            },
+        })
+    })
+
+    function doSearch() {
+        var pager = $('#tdTable').datagrid('getPager');	// get the pager of datagrid
+        pager.pagination();
+        var url = 'http://'+window.location.host+":8080/modelSet/query?";
+        var num = 0;
+        if ($('#modelName').val() != '') {
+            if (num == 0) {
+                url = url + 'modelName=' + $('#modelName').val();
+            } else {
+                url = url + '&modelName=' + $('#modelName').val();
+            }
+            num = num + 1;
+        }
+        if ($('#providerName').val() != '') {
+            if (num == 0) {
+                url = url + 'providerName=' + $('#providerName').val();
+            } else {
+                url = url + '&providerName=' + $('#providerName').val();
+            }
+            num = num + 1;
+        }
+        if ($('#dsName').val() != '') {
+            if (num == 0) {
+                url = url + 'dsName=' + $('#dsName').val();
+            } else {
+                url = url + '&dsName=' + $('#dsName').val();
+            }
+            num = num + 1;
+        }
+        if ($('#opName').val() != '') {
+            if (num == 0) {
+                url = url + 'opName=' + $('#opName').val();
+            } else {
+                url = url + '&opName=' + $('#opName').val();
+            }
+            num = num + 1;
+        }
+        if ($('#netStructName').val() != '') {
+            if (num == 0) {
+                url = url + 'netStructName=' + $('#netStructName').val();
+            } else {
+                url = url + '&netStructName=' + $('#netStructName').val();
+            }
+            num = num + 1;
+        }
+        $('#tdTable').datagrid('reload', url);
+
+
+    }
+
+
+</script>
+
+</body>
+</html>

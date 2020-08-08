@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>优化器添加</title>
+    <link rel="stylesheet" href="../static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/table.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px"  onload="modelSetJudge()">
+<div class="easyui-panel" title="新建模型基本信息" style="width:94%;padding-top:30px;padding-left: 50px;font-size: 15px">
+    <form id="ff" method="post" enctype="multipart/form-data" style="width:94%;">
+        <table>
+
+            <tr>
+                <td>模型名称:</td>
+                <td><input id="modelId" class="easyui-combobox" name="modelId"
+                           data-options="
+                       valueField:'id',
+                       textField:'modelName',
+                       prompt:'请选择模型名称',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                       //获取combobox输入的值
+                       var q = param.q;
+                       if (q == undefined || q == '' || q == null)
+                           return false;
+                       $.ajax({
+                           url:'http://'+window.location.host+ ':8080/model/getByName',
+                           type: 'post',
+                           data:JSON.stringify({ 'q': q }) ,
+                           dataType: 'json',
+                           contentType: 'application/json;charset=UTF-8',
+                           success: function (data) {
+                               //执行loader的success回调函数(装载数据)
+                               success(data.content);
+                           },
+                           //异常处理
+                           error: function (xml, text, msg) {
+                               error.apply(this, arguments);
+                           }
+                       });
+                       },
+                       labelAlign:'right',
+                       labelWidth:'150'," ></td>
+            </tr>
+            <tr>
+                <td>子网络:</td>
+                <td><input id="categoryId" class="easyui-combobox" name="categoryId"
+                           data-options="
+                       valueField:'id',
+                       textField:'modelName',
+                       prompt:'请选择子网络',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                       //获取combobox输入的值
+                       var q = param.q;
+                       if (q == undefined || q == '' || q == null)
+                           return false;
+                       $.ajax({
+                           url: 'http://'+window.location.host+':8080/category/getByName',
+                           type: 'post',
+                           data:JSON.stringify({ 'q': q }) ,
+                           dataType: 'json',
+                           contentType: 'application/json;charset=UTF-8',
+                           success: function (data) {
+                               //执行loader的success回调函数(装载数据)
+                               success(data.content);
+                           },
+                           //异常处理
+                           error: function (xml, text, msg) {
+                               error.apply(this, arguments);
+                           }
+                       });
+                       },
+                       labelAlign:'right',
+                       labelWidth:'150',"></td>
+            </tr>
+             <tr>
+                <td>优化器:</td>
+                <td><input id="optimizerId" class="easyui-combobox" name="optimizerId"
+                           data-options="
+                       valueField:'id',
+                       textField:'name',
+                       prompt:'请选择优化器',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                   //获取combobox输入的值
+                   var q = param.q;
+                   if (q == undefined || q == '' || q == null)
+                       return false;
+                   $.ajax({
+                       url: 'http://'+window.location.host+':8080/optimizer/getByName',
+                       type: 'post',
+                       data:JSON.stringify({ 'q': q }) ,
+                       dataType: 'json',
+                       contentType: 'application/json;charset=UTF-8',
+                       success: function (data) {
+                           //执行loader的success回调函数(装载数据)
+                           success(data.content);
+                       },
+                       //异常处理
+                       error: function (xml, text, msg) {
+                           error.apply(this, arguments);
+                       }
+                   });
+                   },
+                   labelAlign:'right',
+                   labelWidth:'150'," ></td>
+            </tr>
+             <tr>
+                <td>平台:</td>
+                <td><input id="platformId" class="easyui-combobox" name="platformId"
+                           data-options="
+                       valueField:'id',
+                       textField:'content',
+                       prompt:'请选择平台',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                   //获取combobox输入的值
+                   var q = param.q;
+                   if (q == undefined || q == '' || q == null)
+                       return false;
+                   $.ajax({
+                       url: 'http://'+window.location.host+':8080/platform/getByName',
+                       type: 'post',
+                       data:JSON.stringify({ 'q': q }) ,
+                       dataType: 'json',
+                       contentType: 'application/json;charset=UTF-8',
+                       success: function (data) {
+                           //执行loader的success回调函数(装载数据)
+                           success(data.content);
+                       },
+                       //异常处理
+                       error: function (xml, text, msg) {
+                           error.apply(this, arguments);
+                       }
+                   });
+                   },
+                   labelAlign:'right',
+                   labelWidth:'150'," ></td>
+            </tr>
+             <tr>
+                <td>数据集:</td>
+                <td><input id="dataId" class="easyui-combobox" name="dataId"
+                           data-options="
+                       valueField:'id',
+                       textField:'dsName',
+                       prompt:'请选择数据集',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                   //获取combobox输入的值
+                   var q = param.q;
+                   if (q == undefined || q == '' || q == null)
+                       return false;
+                   $.ajax({
+                       url: 'http://'+window.location.host+':8080/dataset/getByName',
+                       type: 'post',
+                       data:JSON.stringify({ 'q': q }) ,
+                       dataType: 'json',
+                       contentType: 'application/json;charset=UTF-8',
+                       success: function (data) {
+                           //执行loader的success回调函数(装载数据)
+                           success(data.content);
+                       },
+                       //异常处理
+                       error: function (xml, text, msg) {
+                           error.apply(this, arguments);
+                       }
+                   });
+                   },
+                   labelAlign:'right',
+                   labelWidth:'150'," ></td>
+            </tr>
+             <tr>
+                <td>提供者:</td>
+                <td><input id="providerId" class="easyui-combobox" name="providerId"
+                           data-options="
+                       valueField:'id',
+                       textField:'name',
+                       prompt:'请选择提供者',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                   //获取combobox输入的值
+                   var q = param.q;
+                   if (q == undefined || q == '' || q == null)
+                       return false;
+                   $.ajax({
+                       url: 'http://'+window.location.host+':8080/provider/getByName',
+                       type: 'post',
+                       data:JSON.stringify({ 'q': q }) ,
+                       dataType: 'json',
+                       contentType: 'application/json;charset=UTF-8',
+                       success: function (data) {
+                           //执行loader的success回调函数(装载数据)
+                           success(data.content);
+                       },
+                       //异常处理
+                       error: function (xml, text, msg) {
+                           error.apply(this, arguments);
+                       }
+                   });
+                   },
+                   labelAlign:'right',
+                   labelWidth:'150'," ></td>
+            </tr>
+            <tr>
+                <td>性能:</td>
+                <td><input id="performance" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+
+            <tr>
+                <td>模型文件:</td>
+                <td><input name="file" id="modelFile" class="f1 easyui-filebox" required="true"></td>
+            </tr>
+
+
+            <tr>
+                <td></td>
+                <td align="center">
+                    <button class="submitBtm" type="button" id="submitJob" onclick="modelSetAdd()" style="margin-left: -50px">发布</button>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+<script>
+    $('#modelFile').filebox({
+            buttonText: '选择文件',
+            onChange() {
+                var modelFile = $("#modelFile").filebox("files")[0];
+                var form = new FormData();
+                form.append("file", modelFile); // 图片
+                $.ajax({
+                    url: 'http://'+window.location.host+':8080/file/upload ',
+                    type: "post",
+                    timeout: 120000,
+                    data: form,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        var fileName = data.content;
+                        $('#modelFile').filebox('setText', '');//清空原来的值
+                        $('#modelFile').filebox('setText', fileName);//把返回的值给
+                    }
+                });
+            }
+        })
+
+</script>
+</body>
+</html>

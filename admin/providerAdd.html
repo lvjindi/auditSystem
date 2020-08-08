@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>优化器添加</title>
+    <link rel="stylesheet" href="../static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/table.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px" onload="providerJudge()">
+<div class="easyui-panel" title="新建作者" style="width:94%;padding-top:30px;padding-left: 50px;font-size: 15px">
+    <form id="ff" method="post" enctype="multipart/form-data" style="width:94%;">
+        <table>
+            <tr>
+                <td>姓名 :</td>
+                <td><input id="name" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>简介:</td>
+                <td><input id="introduce" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>邮箱:</td>
+                <td><input id="email" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>电话:</td>
+                <td><input id="phone" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="center">
+                    <button class="submitBtm" type="button" id="submitJob" onclick="providerAdd()"
+                            style="margin-left: -50px">发布
+                    </button>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+
+</body>
+</html>

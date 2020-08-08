@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>优化器添加</title>
+    <link rel="stylesheet" href="../static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/metro/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/mobile.css">
+    <link rel="stylesheet" type="text/css" href="../static/js/jquery-easyui-1.8.2/themes/icon.css">
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/jquery-easyui-1.8.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/index.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/main.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="../static/js/auditSys/table.js"></script>
+</head>
+<body style="padding-left: 5%;padding-top: 30px" onload="modelInfoJudge()">
+<div class="easyui-panel" title="新建模型基本信息" style="width:94%;padding-top:30px;padding-left: 50px;font-size: 15px">
+    <form id="ff" method="post" enctype="multipart/form-data" style="width:94%;">
+        <table>
+            <tr>
+                <td>模型名称 :</td>
+                <td><input id="modelName" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>模型功能:</td>
+                <td><input id="function" class="f1 easyui-textbox" required="true"></td>
+            </tr>
+            <tr>
+                <td>网络结构:</td>
+                <td><input id="netStructId" class="easyui-combobox" name="netStructId"
+                           data-options="
+                       valueField:'id',
+                       textField:'content',
+                       prompt:'请选择网络结构',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                   //获取combobox输入的值
+                   var q = param.q;
+                   if (q == undefined || q == '' || q == null)
+                       return false;
+                   $.ajax({
+                       url: 'http://'+window.location.host+':8080/netstruct/getByName',
+                       type: 'post',
+                       data:JSON.stringify({ 'q': q }) ,
+                       dataType: 'json',
+                       contentType: 'application/json;charset=UTF-8',
+                       success: function (data) {
+                           //执行loader的success回调函数(装载数据)
+                           success(data.content);
+                       },
+                       //异常处理
+                       error: function (xml, text, msg) {
+                           error.apply(this, arguments);
+                       }
+                   });
+                   },
+                   labelAlign:'right',
+                   labelWidth:'150',
+" ></td>
+            </tr>
+            <tr>
+                <td>评价指标:</td>
+                <td><input id="evaluation" class="f1 easyui-textbox"  required="true"></td>
+            </tr>
+            <tr>
+                <td>描述信息:</td>
+                <td><input id="description" class="f1 easyui-textbox"  required="true"></td>
+            </tr>
+            <tr>
+                <td>python源文件名称:</td>
+                <td><input name="file" id="pythonFile" class="f1 easyui-filebox"  required="true"></td>
+            </tr>
+            <tr>
+                <td>图片:</td>
+                <td><input name="file" id="picture" class="f1 easyui-filebox"  required="true"></td>
+            </tr>
+            <tr>
+                <td>模型创建者:</td>
+                <td><input id="creator" class="easyui-combobox" name="creator"
+                           data-options="
+                       valueField:'id',
+                       textField:'name',
+                        prompt:'请选择创建人',
+                       required:true,
+                        mode:'remote',
+                        loader:function(param, success, error){
+                       //获取combobox输入的值
+                       var q = param.q;
+                       if (q == undefined || q == '' || q == null)
+                           return false;
+                       $.ajax({
+                           url:'http://'+window.location.host+ ':8080/provider/getByName',
+                           type: 'post',
+                           data:JSON.stringify({ 'q': q }) ,
+                           dataType: 'json',
+                           contentType: 'application/json;charset=UTF-8',
+                           success: function (data) {
+                               //执行loader的success回调函数(装载数据)
+                               success(data.content);
+                           },
+                           //异常处理
+                           error: function (xml, text, msg) {
+                               error.apply(this, arguments);
+                           }
+                       });
+                       },
+                       labelAlign:'right',
+                       labelWidth:'150',
+
+" ></td>
+            </tr>
+            <tr>
+                <td>模型数据规模:</td>
+                <td><input id="modelSize" class="f1 easyui-textbox"  required="true"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="center">
+                    <button class="submitBtm" type="button" id="submitJob" onclick="modelInfoAdd()" style="margin-left: -50px">发布</button>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+<script>
+    $('#pythonFile').filebox({
+            buttonText: '选择文件',
+            onChange() {
+                var pythonFile = $("#pythonFile").filebox("files")[0];
+                var form = new FormData();
+                form.append("file", pythonFile); // 图片
+                $.ajax({
+                    url: 'http://'+window.location.host+':8080/file/upload ',
+                    type: "post",
+                    timeout: 120000,
+                    data: form,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        var fileName = data.content;
+                        $('#pythonFile').filebox('setText', '');//清空原来的值
+                        $('#pythonFile').filebox('setText', fileName);//把返回的值给
+                    }
+                });
+            }
+        })
+
+    $('#picture').filebox({
+            buttonText: '选择文件',
+            onChange() {
+                var picture = $("#picture").filebox("files")[0];
+                var form = new FormData();
+                form.append("file", picture); // 图片
+                $.ajax({
+                    url: 'http://'+window.location.host+':8080/file/upload ',
+                    type: "post",
+                    timeout: 120000,
+                    data: form,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        var fileName = data.content;
+                        $('#picture').filebox('setText', '');//清空原来的值
+                        $('#picture').filebox('setText', fileName);//把返回的值给
+                    }
+                });
+            }
+        })
+</script>
+</body>
+</html>

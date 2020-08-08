@@ -68,25 +68,21 @@ label {
 }
 
 input {
-    width: 440px;
-    height: 25px;
-    border: #CCCCCC solid 1px;
-    border-radius: 4px;
-    margin-top: 10px;
+    width: 60%;
 }
 
-input[type="submit"] {
-    width: 80px;
-    height: 40px;
-    color: white;
-    margin-top: 30px;
-    background: #609AB6;
-    border: #609AB6 solid 1px;
-    border-radius: 5px;
-    font-size: 16px;
-    letter-spacing: 3px;
-    margin-left: 180px;
-}
+/*input[type="submit"] {*/
+    /*width: 80px;*/
+    /*height: 40px;*/
+    /*color: white;*/
+    /*margin-top: 30px;*/
+    /*background: #609AB6;*/
+    /*border: #609AB6 solid 1px;*/
+    /*border-radius: 5px;*/
+    /*font-size: 16px;*/
+    /*letter-spacing: 3px;*/
+    /*margin-left: 180px;*/
+/*}*/
 
 textarea {
     width: 440px;
@@ -104,6 +100,31 @@ select {
     border: #CCCCCC solid 1px;
     border-radius: 4px;
     margin-top: 10px;
+}
+
+li{
+    width:99.5%;
+    height: 30px;
+    float:left;
+    list-style-type: none;
+    background:linear-gradient(white 40%, lightgray);
+    text-align:center;
+    line-height: 30px;
+    border:#F2F2F2 solid 1px;
+    cursor: pointer;
+    letter-spacing: 2px;
+}
+ul{
+    padding: 0;
+    margin:0;
+}
+
+td{
+    padding-left:20px ;
+}
+
+tr{
+    height: 50px;
 }
 
 #loginBtm {
@@ -125,6 +146,7 @@ select {
     height: 80px;
     background: white;
     box-shadow: darkgray 5px 5px 5px;
+
 }
 
 #container-left {
@@ -138,7 +160,19 @@ select {
     box-shadow: darkgray 5px 5px 5px;
 }
 
+
 #container-right {
+    min-height: 700px;
+    width: 98%;
+    float: left;
+    margin-top: 12px;
+    margin-left: 13px;
+    border: 1px solid #E8E8E8;
+    background-color: white;
+    box-shadow: #8B8989 5px 5px 5px;
+}
+
+#container-right1 {
     min-height: 700px;
     width: 81%;
     float: left;
@@ -156,7 +190,51 @@ select {
     padding-left: 30px;
     padding-top: 15px;
     letter-spacing: 3px;
-    float: left;
+    /*float: left;*/
+    text-align: center;
+}
+
+.circle{
+    height: 180px;
+    width: 180px;
+    color: rgb(86,82,84);
+    background: linear-gradient(white 45%, rgb(213,228,255));
+    border: 1px solid rgb(236,243,255)  ;
+    float:left;
+    border-radius: 50%;
+    /*-moz-border-radius: 50%;*/
+    /*-webkit-border-radius: 50%;*/
+    margin-top:12%;
+    /*margin-left:10%;*/
+    cursor: pointer;
+
+}
+
+.words{
+    width: 50%;
+    font-size:23px;
+    font-weight: bold;
+    text-align: center;
+    margin-top:25%;
+    margin-left: 25%;
+    letter-spacing: 5px;
+}
+
+.data{
+    width: 50%;
+    color: red;
+    font-size:23px;
+    font-weight: bold;
+    text-align: center;
+    margin-top:5%;
+    margin-left: 25%;
+    letter-spacing: 5px;
+}
+
+.searchBox{
+    line-height:26px;
+    border:1px solid #ccc;
+    margin-left: 5px;
 }
 
 #indexButton {
@@ -207,7 +285,7 @@ select {
     width: 120px;
     height: 40px;
     /*margin-left: 48%;*/
-    margin-top: 30px;
+    margin: 20px 0px 20px 0px;
     color: white;
     background: #609AB6;
     border: #609AB6 solid 1px;
@@ -227,4 +305,10 @@ button {
     font-size: 14px;
     letter-spacing: 3px;
     cursor: pointer;
+}
+
+.dv-label{
+    width: 10%;
+    color: darkblue;
+    font-weight: bold;
 }
